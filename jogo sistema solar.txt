@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Explorador do Sistema Solar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .solar-system {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin: 30px 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 0, 0.1) 0%, transparent 20%);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .sun {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ffeb3b, #ff9800);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 30px #ffeb3b, 0 0 60px #ff9800;
+            animation: pulse 2s infinite;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: orbit 20s linear infinite;
+        }
+
+        .planet:hover {
+            transform: scale(1.5);
+            z-index: 10;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg); }
+        }
+
+        .planet-info {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #667eea;
+            max-width: 300px;
+            display: none;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .planets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .planet-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+
+        .planet-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .planet-visual {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            position: relative;
+            animation: planetRotate 10s linear infinite;
+        }
+
+        @keyframes planetRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .missions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .mission-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .mission-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .mission-card.completed {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(56, 142, 60, 0.2));
+        }
+
+        .tools-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .calculator {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .calc-display {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            min-height: 50px;
+            border: 2px solid #333;
+        }
+
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .calc-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 2px solid #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .calc-btn:hover {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-color: #667eea;
+        }
+
+        .calc-btn.operator {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+        }
+
+        .measurement-tool {
+            margin: 20px 0;
+        }
+
+        .measurement-display {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .comparison-tool {
+            margin: 20px 0;
+        }
+
+        .comparison-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .comparison-planet {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            min-width: 150px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+        }
+
+        .btn.danger {
+            background: linear-gradient(45deg, #f44336, #da190b);
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            height: 100%;
+            transition: width 0.3s;
+            border-radius: 5px;
+        }
+
+        .achievement {
+            background: linear-gradient(45deg, #ffd700, #ffb300);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 10px;
+            display: inline-block;
+            font-weight: bold;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #667eea;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        select, input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .solar-system {
+                height: 400px;
+            }
+            
+            .tools-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .planets-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .missions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Explorador do Sistema Solar</h1>
+            <p>Descobre os segredos do nosso sistema solar através de missões interativas!</p>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="planetsVisited">0</div>
+                    <div>Planetas Visitados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="missionsCompleted">0</div>
+                    <div>Missões Completadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="toolsUsed">0</div>
+                    <div>Ferramentas Usadas</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('planets')">🪐 Planetas</button>
+            <button class="tab-btn" onclick="showTab('missions')">🚀 Missões</button>
+            <button class="tab-btn" onclick="showTab('tools')">📏 Ferramentas</button>
+            <button class="tab-btn" onclick="showTab('achievements')">🏆 Conquistas</button>
+        </div>
+
+        <!-- Tab: Planetas -->
+        <div id="planets" class="tab-content active">
+            <div class="solar-system" id="solarSystem">
+                <div class="sun" onclick="showPlanetInfo('Sol')" title="Sol - A nossa estrela"></div>
+                
+                <!-- Órbitas e Planetas -->
+                <div class="orbit" style="width: 120px; height: 120px;"></div>
+                <div class="planet" id="mercury" style="width: 8px; height: 8px; background: #8c7853; --orbit-radius: 60px; animation-duration: 8s;" onclick="showPlanetInfo('Mercúrio')" title="Mercúrio"></div>
+                
+                <div class="orbit" style="width: 160px; height: 160px;"></div>
+                <div class="planet" id="venus" style="width: 12px; height: 12px; background: #ffc649; --orbit-radius: 80px; animation-duration: 12s;" onclick="showPlanetInfo('Vénus')" title="Vénus"></div>
+                
+                <div class="orbit" style="width: 200px; height: 200px;"></div>
+                <div class="planet" id="earth" style="width: 14px; height: 14px; background: linear-gradient(45deg, #6b93d6, #4d84c4); --orbit-radius: 100px; animation-duration: 16s;" onclick="showPlanetInfo('Terra')" title="Terra"></div>
+                
+                <div class="orbit" style="width: 240px; height: 240px;"></div>
+                <div class="planet" id="mars" style="width: 10px; height: 10px; background: #cd5c5c; --orbit-radius: 120px; animation-duration: 20s;" onclick="showPlanetInfo('Marte')" title="Marte"></div>
+                
+                <div class="orbit" style="width: 320px; height: 320px;"></div>
+                <div class="planet" id="jupiter" style="width: 28px; height: 28px; background: linear-gradient(45deg, #d8ca9d, #fad5a5); --orbit-radius: 160px; animation-duration: 28s;" onclick="showPlanetInfo('Júpiter')" title="Júpiter"></div>
+                
+                <div class="orbit" style="width: 380px; height: 380px;"></div>
+                <div class="planet" id="saturn" style="width: 24px; height: 24px; background: linear-gradient(45deg, #fad5a5, #ffcc33); --orbit-radius: 190px; animation-duration: 32s;" onclick="showPlanetInfo('Saturno')" title="Saturno"></div>
+                
+                <div class="orbit" style="width: 440px; height: 440px;"></div>
+                <div class="planet" id="uranus" style="width: 18px; height: 18px; background: #4fd0e7; --orbit-radius: 220px; animation-duration: 36s;" onclick="showPlanetInfo('Úrano')" title="Úrano"></div>
+                
+                <div class="orbit" style="width: 500px; height: 500px;"></div>
+                <div class="planet" id="neptune" style="width: 16px; height: 16px; background: #4b70dd; --orbit-radius: 250px; animation-duration: 40s;" onclick="showPlanetInfo('Neptuno')" title="Neptuno"></div>
+            </div>
+
+            <div class="planets-grid" id="planetsGrid">
+                <!-- Planetas serão gerados dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Tab: Missões -->
+        <div id="missions" class="tab-content">
+            <h2 style="text-align: center; margin-bottom: 30px;">🚀 Missões Espaciais</h2>
+            <div class="missions-grid" id="missionsGrid">
+                <!-- Missões serão geradas dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Tab: Ferramentas -->
+        <div id="tools" class="tab-content">
+            <h2 style="text-align: center; margin-bottom: 30px;">📏 Ferramentas Científicas</h2>
+            
+            <div class="tools-container">
+                <!-- Ferramenta de Medição -->
+                <div class="tool-card">
+                    <h3>📏 Medição de Distâncias</h3>
+                    <div class="measurement-tool">
+                        <label>Seleciona dois planetas:</label><br>
+                        <select id="planet1">
+                            <option value="">Escolhe o primeiro planeta</option>
+                        </select>
+                        <select id="planet2">
+                            <option value="">Escolhe o segundo planeta</option>
+                        </select>
+                        <button class="btn" onclick="measureDistance()">📐 Medir Distância</button>
+                        <div class="measurement-display" id="measurementResult">
+                            Seleciona dois planetas para medir a distância entre eles.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ferramenta de Comparação -->
+                <div class="tool-card">
+                    <h3>⚖️ Comparação de Planetas</h3>
+                    <div class="comparison-tool">
+                        <label>Compara planetas:</label><br>
+                        <select id="comparePlanet1">
+                            <option value="">Primeiro planeta</option>
+                        </select>
+                        <select id="comparePlanet2">
+                            <option value="">Segundo planeta</option>
+                        </select>
+                        <button class="btn" onclick="comparePlanets()">⚖️ Comparar</button>
+                        <div class="comparison-visual" id="comparisonResult">
+                            Seleciona dois planetas para comparar os seus tamanhos.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculadora Espacial -->
+                <div class="tool-card">
+                    <h3>🧮 Calculadora Espacial</h3>
+                    <div class="calculator">
+                        <div class="calc-display" id="calcDisplay">0</div>
+                        <div class="calc-buttons">
+                            <button class="calc-btn" onclick="clearCalc()">C</button>
+                            <button class="calc-btn" onclick="deleteLast()">⌫</button>
+                            <button class="calc-btn operator" onclick="appendToCalc('/')">/</button>
+                            <button class="calc-btn operator" onclick="appendToCalc('*')">×</button>
+                            
+                            <button class="calc-btn" onclick="appendToCalc('7')">7</button>
+                            <button class="calc-btn" onclick="appendToCalc('8')">8</button>
+                            <button class="calc-btn" onclick="appendToCalc('9')">9</button>
+                            <button class="calc-btn operator" onclick="appendToCalc('-')">-</button>
+                            
+                            <button class="calc-btn" onclick="appendToCalc('4')">4</button>
+                            <button class="calc-btn" onclick="appendToCalc('5')">5</button>
+                            <button class="calc-btn" onclick="appendToCalc('6')">6</button>
+                            <button class="calc-btn operator" onclick="appendToCalc('+')">+</button>
+                            
+                            <button class="calc-btn" onclick="appendToCalc('1')">1</button>
+                            <button class="calc-btn" onclick="appendToCalc('2')">2</button>
+                            <button class="calc-btn" onclick="appendToCalc('3')">3</button>
+                            <button class="calc-btn operator" onclick="calculate()" rowspan="2">=</button>
+                            
+                            <button class="calc-btn" onclick="appendToCalc('0')" style="grid-column: span 2;">0</button>
+                            <button class="calc-btn" onclick="appendToCalc('.')">.</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Conquistas -->
+        <div id="achievements" class="tab-content">
+            <h2 style="text-align: center; margin-bottom: 30px;">🏆 As Tuas Conquistas</h2>
+            <div id="achievementsList">
+                <!-- Conquistas serão geradas dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para informações dos planetas -->
+    <div id="planetModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closePlanetModal()">&times;</button>
+            <div id="planetModalContent">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para missões -->
+    <div id="missionModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeMissionModal()">&times;</button>
+            <div id="missionModalContent">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos planetas
+        const planetsData = {
+            'Sol': {
+                name: 'Sol',
+                emoji: '☀️',
+                description: 'A nossa estrela, o centro do sistema solar.',
+                facts: [
+                    'Temperatura: 5.778 K (superfície)',
+                    'Massa: 1.989 × 10³⁰ kg',
+                    'Diâmetro: 1.392.700 km',
+                    'Idade: 4,6 mil milhões de anos'
+                ],
+                color: '#ffeb3b'
+            },
+            'Mercúrio': {
+                name: 'Mercúrio',
+                emoji: '☿️',
+                description: 'O planeta mais próximo do Sol e o menor do sistema solar.',
+                facts: [
+                    'Distância do Sol: 58 milhões km',
+                    'Duração do dia: 59 dias terrestres',
+                    'Duração do ano: 88 dias terrestres',
+                    'Temperatura: -173°C a 427°C'
+                ],
+                color: '#8c7853'
+            },
+            'Vénus': {
+                name: 'Vénus',
+                emoji: '♀️',
+                description: 'O planeta mais quente do sistema solar devido ao efeito estufa.',
+                facts: [
+                    'Distância do Sol: 108 milhões km',
+                    'Duração do dia: 243 dias terrestres',
+                    'Duração do ano: 225 dias terrestres',
+                    'Temperatura: 462°C (constante)'
+                ],
+                color: '#ffc649'
+            },
+            'Terra': {
+                name: 'Terra',
+                emoji: '🌍',
+                description: 'O nosso planeta, o único conhecido com vida.',
+                facts: [
+                    'Distância do Sol: 150 milhões km',
+                    'Duração do dia: 24 horas',
+                    'Duração do ano: 365,25 dias',
+                    'Temperatura média: 15°C'
+                ],
+                color: '#6b93d6'
+            },
+            'Marte': {
+                name: 'Marte',
+                emoji: '♂️',
+                description: 'O planeta vermelho, alvo de muitas missões espaciais.',
+                facts: [
+                    'Distância do Sol: 228 milhões km',
+                    'Duração do dia: 24h 37min',
+                    'Duração do ano: 687 dias terrestres',
+                    'Temperatura: -87°C a -5°C'
+                ],
+                color: '#cd5c5c'
+            },
+            'Júpiter': {
+                name: 'Júpiter',
+                emoji: '♃',
+                description: 'O maior planeta do sistema solar, um gigante gasoso.',
+                facts: [
+                    'Distância do Sol: 778 milhões km',
+                    'Duração do dia: 9h 56min',
+                    'Duração do ano: 12 anos terrestres',
+                    'Luas: 95 conhecidas'
+                ],
+                color: '#d8ca9d'
+            },
+            'Saturno': {
+                name: 'Saturno',
+                emoji: '♄',
+                description: 'Famoso pelos seus anéis espetaculares.',
+                facts: [
+                    'Distância do Sol: 1,4 mil milhões km',
+                    'Duração do dia: 10h 42min',
+                    'Duração do ano: 29 anos terrestres',
+                    'Luas: 146 conhecidas'
+                ],
+                color: '#fad5a5'
+            },
+            'Úrano': {
+                name: 'Úrano',
+                emoji: '♅',
+                description: 'Um gigante de gelo que roda de lado.',
+                facts: [
+                    'Distância do Sol: 2,9 mil milhões km',
+                    'Duração do dia: 17h 14min',
+                    'Duração do ano: 84 anos terrestres',
+                    'Luas: 27 conhecidas'
+                ],
+                color: '#4fd0e7'
+            },
+            'Neptuno': {
+                name: 'Neptuno',
+                emoji: '♆',
+                description: 'O planeta mais distante, com ventos supersónicos.',
+                facts: [
+                    'Distância do Sol: 4,5 mil milhões km',
+                    'Duração do dia: 16h 6min',
+                    'Duração do ano: 165 anos terrestres',
+                    'Ventos: até 2.100 km/h'
+                ],
+                color: '#4b70dd'
+            }
+        };
+
+        // Dados das missões
+        const missionsData = [
+            {
+                id: 'apollo',
+                name: 'Missão Apollo',
+                emoji: '🌙',
+                target: 'Lua',
+                description: 'Revive a histórica missão Apollo 11 que levou os primeiros humanos à Lua.',
+                objectives: [
+                    'Lançar a nave espacial',
+                    'Navegar até à Lua',
+                    'Aterrar na superfície lunar',
+                    'Recolher amostras',
+                    'Regressar à Terra'
+                ],
+                difficulty: 'Fácil',
+                duration: '8 dias',
+                completed: false
+            },
+            {
+                id: 'mars',
+                name: 'Exploração de Marte',
+                emoji: '🔴',
+                target: 'Marte',
+                description: 'Explora o planeta vermelho e procura sinais de vida passada.',
+                objectives: [
+                    'Lançar rover para Marte',
+                    'Aterrar com segurança',
+                    'Analisar o solo marciano',
+                    'Procurar água',
+                    'Enviar dados para a Terra'
+                ],
+                difficulty: 'Médio',
+                duration: '2 anos',
+                completed: false
+            },
+            {
+                id: 'voyager',
+                name: 'Missão Voyager',
+                emoji: '🛰️',
+                target: 'Planetas Exteriores',
+                description: 'Segue a rota das sondas Voyager pelos planetas gigantes.',
+                objectives: [
+                    'Visitar Júpiter',
+                    'Estudar as luas de Júpiter',
+                    'Continuar para Saturno',
+                    'Fotografar os anéis',
+                    'Sair do sistema solar'
+                ],
+                difficulty: 'Difícil',
+                duration: '12 anos',
+                completed: false
+            },
+            {
+                id: 'jupiter',
+                name: 'Missão Júpiter',
+                emoji: '🪐',
+                target: 'Júpiter',
+                description: 'Estuda o maior planeta do sistema solar e as suas luas.',
+                objectives: [
+                    'Orbitar Júpiter',
+                    'Estudar a Grande Mancha Vermelha',
+                    'Explorar Europa',
+                    'Analisar Io',
+                    'Medir o campo magnético'
+                ],
+                difficulty: 'Médio',
+                duration: '5 anos',
+                completed: false
+            },
+            {
+                id: 'saturn',
+                name: 'Exploração de Saturno',
+                emoji: '💍',
+                target: 'Saturno',
+                description: 'Descobre os segredos dos anéis de Saturno e da lua Titã.',
+                objectives: [
+                    'Aproximar-se de Saturno',
+                    'Estudar os anéis',
+                    'Aterrar em Titã',
+                    'Analisar Encélado',
+                    'Mapear as luas'
+                ],
+                difficulty: 'Difícil',
+                duration: '7 anos',
+                completed: false
+            }
+        ];
+
+        // Estado do jogo
+        let gameState = {
+            planetsVisited: new Set(),
+            missionsCompleted: new Set(),
+            toolsUsed: new Set(),
+            achievements: new Set(),
+            calcDisplay: '0',
+            calcMemory: ''
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            generatePlanetsGrid();
+            generateMissionsGrid();
+            populateSelects();
+            updateStats();
+            checkAchievements();
+        });
+
+        // Criar estrelas no fundo
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Mostrar tabs
+        function showTab(tabName) {
+            // Esconder todas as tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remover classe active de todos os botões
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar tab selecionada
+            document.getElementById(tabName).classList.add('active');
+            
+            // Ativar botão correspondente
+            event.target.classList.add('active');
+        }
+
+        // Gerar grid de planetas
+        function generatePlanetsGrid() {
+            const grid = document.getElementById('planetsGrid');
+            grid.innerHTML = '';
+            
+            Object.values(planetsData).forEach(planet => {
+                if (planet.name === 'Sol') return; // Pular o Sol
+                
+                const card = document.createElement('div');
+                card.className = 'planet-card';
+                card.innerHTML = `
+                    <div class="planet-visual" style="background: ${planet.color}; box-shadow: 0 0 20px ${planet.color};">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2em;">
+                            ${planet.emoji}
+                        </div>
+                    </div>
+                    <h3>${planet.name}</h3>
+                    <p>${planet.description}</p>
+                    <button class="btn" onclick="visitPlanet('${planet.name}')">🚀 Visitar</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Gerar grid de missões
+        function generateMissionsGrid() {
+            const grid = document.getElementById('missionsGrid');
+            grid.innerHTML = '';
+            
+            missionsData.forEach(mission => {
+                const card = document.createElement('div');
+                card.className = `mission-card ${mission.completed ? 'completed' : ''}`;
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="font-size: 3em;">${mission.emoji}</div>
+                        <div>
+                            <h3>${mission.name}</h3>
+                            <p><strong>Destino:</strong> ${mission.target}</p>
+                            <p><strong>Dificuldade:</strong> ${mission.difficulty}</p>
+                            <p><strong>Duração:</strong> ${mission.duration}</p>
+                        </div>
+                    </div>
+                    <p>${mission.description}</p>
+                    <div style="margin-top: 15px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${mission.completed ? '100%' : '0%'}"></div>
+                        </div>
+                        <button class="btn ${mission.completed ? 'success' : ''}" onclick="startMission('${mission.id}')">
+                            ${mission.completed ? '✅ Completada' : '🚀 Iniciar Missão'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Visitar planeta
+        function visitPlanet(planetName) {
+            gameState.planetsVisited.add(planetName);
+            showPlanetInfo(planetName);
+            updateStats();
+            checkAchievements();
+        }
+
+        // Mostrar informações do planeta
+        function showPlanetInfo(planetName) {
+            const planet = planetsData[planetName];
+            if (!planet) return;
+            
+            const modal = document.getElementById('planetModal');
+            const content = document.getElementById('planetModalContent');
+            
+            content.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 4em; margin-bottom: 10px;">${planet.emoji}</div>
+                    <h2 style="color: ${planet.color};">${planet.name}</h2>
+                </div>
+                <p style="font-size: 1.1em; margin-bottom: 20px;">${planet.description}</p>
+                <h3>📊 Factos Interessantes:</h3>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    ${planet.facts.map(fact => `<li>${fact}</li>`).join('')}
+                </ul>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn success" onclick="closePlanetModal()">✅ Explorado!</button>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            
+            // Marcar como visitado
+            gameState.planetsVisited.add(planetName);
+            updateStats();
+            checkAchievements();
+        }
+
+        // Fechar modal do planeta
+        function closePlanetModal() {
+            document.getElementById('planetModal').style.display = 'none';
+        }
+
+        // Iniciar missão
+        function startMission(missionId) {
+            const mission = missionsData.find(m => m.id === missionId);
+            if (!mission || mission.completed) return;
+            
+            const modal = document.getElementById('missionModal');
+            const content = document.getElementById('missionModalContent');
+            
+            content.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 4em; margin-bottom: 10px;">${mission.emoji}</div>
+                    <h2>${mission.name}</h2>
+                </div>
+                <p style="font-size: 1.1em; margin-bottom: 20px;">${mission.description}</p>
+                <h3>🎯 Objetivos da Missão:</h3>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    ${mission.objectives.map(obj => `<li>${obj}</li>`).join('')}
+                </ul>
+                <div style="margin: 20px 0;">
+                    <p><strong>Dificuldade:</strong> ${mission.difficulty}</p>
+                    <p><strong>Duração Estimada:</strong> ${mission.duration}</p>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn success" onclick="completeMission('${missionId}')">🚀 Completar Missão</button>
+                    <button class="btn" onclick="closeMissionModal()">❌ Cancelar</button>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Completar missão
+        function completeMission(missionId) {
+            const mission = missionsData.find(m => m.id === missionId);
+            if (!mission) return;
+            
+            mission.completed = true;
+            gameState.missionsCompleted.add(missionId);
+            
+            // Mostrar conquista
+            showAchievement(`🚀 Missão ${mission.name} Completada!`);
+            
+            closeMissionModal();
+            generateMissionsGrid();
+            updateStats();
+            checkAchievements();
+        }
+
+        // Fechar modal da missão
+        function closeMissionModal() {
+            document.getElementById('missionModal').style.display = 'none';
+        }
+
+        // Popular selects das ferramentas
+        function populateSelects() {
+            const selects = ['planet1', 'planet2', 'comparePlanet1', 'comparePlanet2'];
+            const planets = Object.keys(planetsData).filter(p => p !== 'Sol');
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Escolhe um planeta</option>';
+                planets.forEach(planet => {
+                    const option = document.createElement('option');
+                    option.value = planet;
+                    option.textContent = `${planetsData[planet].emoji} ${planet}`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Medir distância entre planetas
+        function measureDistance() {
+            const planet1 = document.getElementById('planet1').value;
+            const planet2 = document.getElementById('planet2').value;
+            const result = document.getElementById('measurementResult');
+            
+            if (!planet1 || !planet2) {
+                result.innerHTML = 'Por favor, seleciona dois planetas.';
+                return;
+            }
+            
+            if (planet1 === planet2) {
+                result.innerHTML = 'Seleciona dois planetas diferentes.';
+                return;
+            }
+            
+            // Distâncias aproximadas do Sol (em milhões de km)
+            const distances = {
+                'Mercúrio': 58,
+                'Vénus': 108,
+                'Terra': 150,
+                'Marte': 228,
+                'Júpiter': 778,
+                'Saturno': 1427,
+                'Úrano': 2871,
+                'Neptuno': 4497
+            };
+            
+            const dist1 = distances[planet1];
+            const dist2 = distances[planet2];
+            const distance = Math.abs(dist1 - dist2);
+            
+            result.innerHTML = `
+                <h4>📐 Resultado da Medição</h4>
+                <p><strong>${planetsData[planet1].emoji} ${planet1}:</strong> ${dist1} milhões km do Sol</p>
+                <p><strong>${planetsData[planet2].emoji} ${planet2}:</strong> ${dist2} milhões km do Sol</p>
+                <p><strong>Distância entre eles:</strong> ${distance} milhões km</p>
+                <p style="font-size: 0.9em; color: #ccc; margin-top: 10px;">
+                    💡 Esta é a distância mínima quando os planetas estão alinhados.
+                </p>
+            `;
+            
+            gameState.toolsUsed.add('measurement');
+            updateStats();
+            checkAchievements();
+        }
+
+        // Comparar planetas
+        function comparePlanets() {
+            const planet1 = document.getElementById('comparePlanet1').value;
+            const planet2 = document.getElementById('comparePlanet2').value;
+            const result = document.getElementById('comparisonResult');
+            
+            if (!planet1 || !planet2) {
+                result.innerHTML = 'Por favor, seleciona dois planetas.';
+                return;
+            }
+            
+            if (planet1 === planet2) {
+                result.innerHTML = 'Seleciona dois planetas diferentes.';
+                return;
+            }
+            
+            // Diâmetros aproximados (em km)
+            const diameters = {
+                'Mercúrio': 4879,
+                'Vénus': 12104,
+                'Terra': 12756,
+                'Marte': 6792,
+                'Júpiter': 142984,
+                'Saturno': 120536,
+                'Úrano': 51118,
+                'Neptuno': 49528
+            };
+            
+            const diam1 = diameters[planet1];
+            const diam2 = diameters[planet2];
+            const ratio = Math.max(diam1, diam2) / Math.min(diam1, diam2);
+            
+            // Calcular tamanhos visuais proporcionais
+            const maxSize = 100;
+            const size1 = diam1 >= diam2 ? maxSize : (diam1 / diam2) * maxSize;
+            const size2 = diam2 >= diam1 ? maxSize : (diam2 / diam1) * maxSize;
+            
+            result.innerHTML = `
+                <div class="comparison-planet">
+                    <div style="width: ${size1}px; height: ${size1}px; background: ${planetsData[planet1].color}; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: ${Math.max(size1/3, 16)}px;">
+                        ${planetsData[planet1].emoji}
+                    </div>
+                    <h4>${planet1}</h4>
+                    <p>${diam1.toLocaleString()} km</p>
+                </div>
+                <div style="display: flex; align-items: center; font-size: 2em;">VS</div>
+                <div class="comparison-planet">
+                    <div style="width: ${size2}px; height: ${size2}px; background: ${planetsData[planet2].color}; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: ${Math.max(size2/3, 16)}px;">
+                        ${planetsData[planet2].emoji}
+                    </div>
+                    <h4>${planet2}</h4>
+                    <p>${diam2.toLocaleString()} km</p>
+                </div>
+            `;
+            
+            // Adicionar informação da comparação
+            const larger = diam1 > diam2 ? planet1 : planet2;
+            result.innerHTML += `
+                <div style="grid-column: 1 / -1; text-align: center; margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <p><strong>${larger}</strong> é ${ratio.toFixed(1)}× maior que o outro planeta!</p>
+                </div>
+            `;
+            
+            gameState.toolsUsed.add('comparison');
+            updateStats();
+            checkAchievements();
+        }
+
+        // Funções da calculadora
+        function appendToCalc(value) {
+            const display = document.getElementById('calcDisplay');
+            if (display.textContent === '0' && value !== '.') {
+                display.textContent = value;
+            } else {
+                display.textContent += value;
+            }
+            gameState.toolsUsed.add('calculator');
+            updateStats();
+        }
+
+        function clearCalc() {
+            document.getElementById('calcDisplay').textContent = '0';
+        }
+
+        function deleteLast() {
+            const display = document.getElementById('calcDisplay');
+            if (display.textContent.length > 1) {
+                display.textContent = display.textContent.slice(0, -1);
+            } else {
+                display.textContent = '0';
+            }
+        }
+
+        function calculate() {
+            const display = document.getElementById('calcDisplay');
+            try {
+                const result = eval(display.textContent.replace('×', '*'));
+                display.textContent = result;
+                checkAchievements();
+            } catch (error) {
+                display.textContent = 'Erro';
+                setTimeout(() => {
+                    display.textContent = '0';
+                }, 1500);
+            }
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('planetsVisited').textContent = gameState.planetsVisited.size;
+            document.getElementById('missionsCompleted').textContent = gameState.missionsCompleted.size;
+            document.getElementById('toolsUsed').textContent = gameState.toolsUsed.size;
+        }
+
+        // Verificar conquistas
+        function checkAchievements() {
+            const achievements = [];
+            
+            // Conquistas de planetas
+            if (gameState.planetsVisited.size >= 1 && !gameState.achievements.has('first_planet')) {
+                achievements.push('🪐 Primeiro Explorador - Visitaste o teu primeiro planeta!');
+                gameState.achievements.add('first_planet');
+            }
+            
+            if (gameState.planetsVisited.size >= 4 && !gameState.achievements.has('half_system')) {
+                achievements.push('🌌 Meio Sistema - Exploraste metade dos planetas!');
+                gameState.achievements.add('half_system');
+            }
+            
+            if (gameState.planetsVisited.size >= 8 && !gameState.achievements.has('full_system')) {
+                achievements.push('🏆 Mestre do Sistema Solar - Visitaste todos os planetas!');
+                gameState.achievements.add('full_system');
+            }
+            
+            // Conquistas de missões
+            if (gameState.missionsCompleted.size >= 1 && !gameState.achievements.has('first_mission')) {
+                achievements.push('🚀 Astronauta Iniciante - Completaste a tua primeira missão!');
+                gameState.achievements.add('first_mission');
+            }
+            
+            if (gameState.missionsCompleted.size >= 3 && !gameState.achievements.has('experienced_astronaut')) {
+                achievements.push('👨‍🚀 Astronauta Experiente - 3 missões completadas!');
+                gameState.achievements.add('experienced_astronaut');
+            }
+            
+            if (gameState.missionsCompleted.size >= 5 && !gameState.achievements.has('mission_master')) {
+                achievements.push('🏅 Mestre das Missões - Todas as missões completadas!');
+                gameState.achievements.add('mission_master');
+            }
+            
+            // Conquistas de ferramentas
+            if (gameState.toolsUsed.size >= 1 && !gameState.achievements.has('first_tool')) {
+                achievements.push('🔧 Cientista Iniciante - Usaste a tua primeira ferramenta!');
+                gameState.achievements.add('first_tool');
+            }
+            
+            if (gameState.toolsUsed.size >= 3 && !gameState.achievements.has('tool_master')) {
+                achievements.push('🧪 Mestre da Ciência - Usaste todas as ferramentas!');
+                gameState.achievements.add('tool_master');
+            }
+            
+            // Mostrar novas conquistas
+            achievements.forEach(achievement => {
+                showAchievement(achievement);
+            });
+            
+            // Atualizar lista de conquistas
+            updateAchievementsList();
+        }
+
+        // Mostrar conquista
+        function showAchievement(text) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.textContent = text;
+            achievement.style.position = 'fixed';
+            achievement.style.top = '20px';
+            achievement.style.right = '20px';
+            achievement.style.zIndex = '10000';
+            
+            document.body.appendChild(achievement);
+            
+            setTimeout(() => {
+                achievement.remove();
+            }, 4000);
+        }
+
+        // Atualizar lista de conquistas
+        function updateAchievementsList() {
+            const container = document.getElementById('achievementsList');
+            
+            if (gameState.achievements.size === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>
+                        <h3>Ainda não tens conquistas</h3>
+                        <p>Explora planetas, completa missões e usa ferramentas para desbloquear conquistas!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const achievementTexts = {
+                'first_planet': '🪐 Primeiro Explorador - Visitaste o teu primeiro planeta!',
+                'half_system': '🌌 Meio Sistema - Exploraste metade dos planetas!',
+                'full_system': '🏆 Mestre do Sistema Solar - Visitaste todos os planetas!',
+                'first_mission': '🚀 Astronauta Iniciante - Completaste a tua primeira missão!',
+                'experienced_astronaut': '👨‍🚀 Astronauta Experiente - 3 missões completadas!',
+                'mission_master': '🏅 Mestre das Missões - Todas as missões completadas!',
+                'first_tool': '🔧 Cientista Iniciante - Usaste a tua primeira ferramenta!',
+                'tool_master': '🧪 Mestre da Ciência - Usaste todas as ferramentas!'
+            };
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    ${Array.from(gameState.achievements).map(achievement => `
+                        <div class="achievement" style="position: static; margin: 0;">
+                            ${achievementTexts[achievement]}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                    <h3>Progresso Total</h3>
+                    <p>Conquistas desbloqueadas: ${gameState.achievements.size} / 8</p>
+                    <div class="progress-bar" style="margin: 15px auto; max-width: 300px;">
+                        <div class="progress-fill" style="width: ${(gameState.achievements.size / 8) * 100}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fechar modais ao clicar fora
+        window.onclick = function(event) {
+            const planetModal = document.getElementById('planetModal');
+            const missionModal = document.getElementById('missionModal');
+            
+            if (event.target === planetModal) {
+                planetModal.style.display = 'none';
+            }
+            if (event.target === missionModal) {
+                missionModal.style.display = 'none';
+            }
+        }
+
+        // Suporte para teclado na calculadora
+        document.addEventListener('keydown', function(event) {
+            if (document.querySelector('#tools').classList.contains('active')) {
+                const key = event.key;
+                if ('0123456789'.includes(key)) {
+                    appendToCalc(key);
+                } else if ('+-*/'.includes(key)) {
+                    appendToCalc(key === '*' ? '×' : key);
+                } else if (key === 'Enter' || key === '=') {
+                    calculate();
+                } else if (key === 'Escape' || key === 'c' || key === 'C') {
+                    clearCalc();
+                } else if (key === 'Backspace') {
+                    deleteLast();
+                } else if (key === '.') {
+                    appendToCalc('.');
+                }
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97ce283c62902186',t:'MTc1NzQ5OTI1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
